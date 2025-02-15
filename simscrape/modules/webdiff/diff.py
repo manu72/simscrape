@@ -16,24 +16,20 @@ URLS_TO_CRAWL = [
     "https://www.abc.net.au/news", 
     "https://www.abc.net.au/news/world",
     "https://www.abc.net.au/news/politics",
-    "https://www.abc.net.au/news/business",
-    "https://www.abc.net.au/news/technology",
-    "https://www.abc.net.au/news/science",
-    "https://www.abc.net.au/news/health",
-    "https://www.abc.net.au/news/entertainment",
-    "https://www.abc.net.au/news/indigenous",
-    "https://www.abc.net.au/news/environment",
-    "https://www.abc.net.au/news/justin",
+   # "https://www.abc.net.au/news/business",
+   # "https://www.abc.net.au/news/technology",
+   # "https://www.abc.net.au/news/science",
+   # "https://www.abc.net.au/news/health",
+   # "https://www.abc.net.au/news/entertainment",
+   # "https://www.abc.net.au/news/indigenous",
+   # "https://www.abc.net.au/news/environment",
+   # "https://www.abc.net.au/news/justin",
     # Add more URLs as needed
 ]
 OUTPUT_FILE_PREFIX = "abc"  # variable for prefix for files
 
 async def main():
-    """Execute the main crawling process.
-    
-    Returns:
-        int: 0 for success, 1 for failure
-    """
+    """Execute the main crawling process. Returns: int: 0 for success, 1 for failure"""
     try:
         # Create main output directory
         base_output_dir = Path("output")
@@ -66,10 +62,18 @@ async def main():
                     else:
                         print("✗ Failed: No content retrieved")
 
-                except Exception as e:
+                except asyncio.TimeoutError as e:
+                    print(f"✗ Timeout error crawling {url}: {str(e)}")
+                except IOError as e:
+                    print(f"✗ File operation error for {url}: {str(e)}")
+                except Exception as e:  # pylint: disable=broad-except
+                    # Keep the broad exception as a fallback, but with a pylint disable comment
                     print(f"✗ Error crawling {url}: {str(e)}")
 
-    except Exception as e:
+    except PermissionError as e:
+        print(f"✗ Permission error creating directories: {str(e)}")
+        return 1
+    except Exception as e:  # pylint: disable=broad-except
         print(f"Error: {str(e)}")
         return 1
     return 0
