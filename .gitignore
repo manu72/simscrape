@@ -134,3 +134,8 @@ cython_debug/
 
 # PROJECT files
 output/
+
+# Environment variables
+.env
+.env.*
+!.env.example
