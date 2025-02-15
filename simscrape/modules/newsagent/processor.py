@@ -19,7 +19,7 @@ load_dotenv()  # Add this near the top of the file, before accessing env vars
 # Securely load the API key from an environment variable.
 api_key = os.getenv("OPENAI_API_KEY")
 if not api_key:
-    logger.error("OPENAI_API_KEY environment variable is not set.")
+    logger.error("API key environment variable is not set.")
     sys.exit(1)
 
 # Initialize the OpenAI client
@@ -29,12 +29,17 @@ def call_chatgpt(prompt: str, model: str = "gpt-4-turbo", temperature: float = 0
     """
     Calls the OpenAI API with the given prompt and returns the response.
     """
+    if not (0 <= temperature <= 1):
+        raise ValueError("Temperature must be between 0 and 1")
+    if not (0 <= max_tokens <= 10000):
+        raise ValueError("Max tokens must be between 0 and 10000")
     try:
         response = client.chat.completions.create(
             model=model,
             messages=[{"role": "user", "content": prompt}],
             temperature=temperature,
             max_tokens=max_tokens,
+            timeout=60,
         )
         result = response.choices[0].message.content.strip()
         logger.debug("API call successful.")
@@ -105,7 +110,7 @@ def read_markdown_files(folder: str) -> dict:
     """
     folder_path = Path(folder)
     if not folder_path.is_dir():
-        raise ValueError(f"The path {folder} is not a valid directory.")
+        raise ValueError(f"The path {folder} is not a valid directory or contains no markdown files.")
 
     pages = {}
     for md_file in folder_path.glob("*.md"):
