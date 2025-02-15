@@ -1,5 +1,5 @@
 """
-Builds in the base crawler and filename generator.
+Builds on the base crawler and filename generator.
 Crawl single URLs and save trimmed content to markdown file(s) suitable for an AI Agent to read.
 Compare two md files from same URL to detect changes.
 Generate change summary and email report for admin.
@@ -14,10 +14,10 @@ from simscrape.common.filename import generate_filename
 
 # variable for configuration
 URLS_TO_CRAWL = [
-    "https://immi.homeaffairs.gov.au/what-we-do/whm-program/latest-news",
-    "https://immi.homeaffairs.gov.au/visas/getting-a-visa/visa-listing",
-   # "https://www.abc.net.au/news",
-   # "https://www.abc.net.au/news/world",
+   # "https://immi.homeaffairs.gov.au/what-we-do/whm-program/latest-news",
+   # "https://immi.homeaffairs.gov.au/visas/getting-a-visa/visa-listing",
+    "https://www.abc.net.au/news",
+    "https://www.abc.net.au/news/world",
    # "https://www.abc.net.au/news/politics",
    # "https://www.abc.net.au/news/business",
    # "https://www.abc.net.au/news/technology",
@@ -29,18 +29,22 @@ URLS_TO_CRAWL = [
    # "https://www.abc.net.au/news/justin",
     # Add more URLs as needed
 ]
-OUTPUT_FILE_PREFIX = "immi"  # variable for prefix for files
+OUTPUT_FILE_PREFIX = "abc"  # variable for prefix for files
 
 async def main():
     """Execute the main crawling process. Returns: int: 0 for success, 1 for failure"""
     try:
-        # Create main output directory
+        # Create main output directory and its subdirectories
         base_output_dir = Path("output")
         base_output_dir.mkdir(exist_ok=True)
 
         # Create subdirectory using OUTPUT_FILE_PREFIX
         output_dir = base_output_dir / OUTPUT_FILE_PREFIX
         output_dir.mkdir(exist_ok=True)
+
+        # Create diff directory
+        diff_dir = base_output_dir / "diff"
+        diff_dir.mkdir(exist_ok=True)
 
         # Generate timestamp for this batch
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -55,13 +59,22 @@ async def main():
                         # Clean up the markdown before saving
                         cleaned_markdown = result.clean_markdown()
 
-                        # Generate filename using the same convention as crawl-sequential.py
+                        # Original file saving logic
                         filename = generate_filename(url, index, timestamp, OUTPUT_FILE_PREFIX)
                         output_file = output_dir / filename
 
                         # Write the cleaned markdown content to file
                         output_file.write_text(cleaned_markdown)
                         print(f"✓ Successfully saved to: {output_file}")
+
+                        # New diff directory logic
+                        diff_filename = generate_filename(url, index, "", OUTPUT_FILE_PREFIX).replace("__", "_")
+                        diff_subdir = diff_dir / diff_filename
+                        diff_subdir.mkdir(exist_ok=True)
+
+                        diff_file = diff_subdir / f"{timestamp}.md"
+                        diff_file.write_text(cleaned_markdown)
+                        print(f"✓ Diff version saved to: {diff_file}")
                     else:
                         print("✗ Failed: No content retrieved")
 

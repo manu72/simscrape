@@ -28,7 +28,7 @@ class DefaultMarkdownGenerator(MarkdownGenerationStrategy):
                         self.title = None
                 else:
                     self.title = None
-            except Exception as e:
+            except (AttributeError, TypeError) as e:
                 print(f"Warning: Could not extract title: {str(e)}")
                 self.title = None
 
@@ -45,6 +45,6 @@ class DefaultMarkdownGenerator(MarkdownGenerationStrategy):
             text = '\n'.join(chunk for chunk in chunks if chunk)
 
             return text
-        except Exception as e:
+        except (AttributeError, TypeError, ValueError) as e:
             print(f"Error in markdown generation: {str(e)}")
             return ""
