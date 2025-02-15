@@ -80,8 +80,8 @@ def summarize_website(pages: dict) -> str:
         combined_summaries += f"Summary for {file_name}:\n{page_summary}\n\n"
 
     website_prompt = (
-        "You are an expert news website analyst. Based on the following summaries of website pages"
-        " produce a well-structured markdown report. Include:\n"
+        "You are an expert news website analyst. Based on the following summaries of website pages "
+        "produce a well-structured markdown report. Include:\n"
         "1. An executive summary at the top\n"
         "2. Key themes and insights\n"
         "3. Individual story summaries organized by topic\n"
