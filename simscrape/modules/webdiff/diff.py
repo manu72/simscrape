@@ -99,12 +99,12 @@ async def save_diff_reports(
     report_content.append(f"Generated: {timestamp}\n")
 
     for folder, folder_changes in changes.items():
-        report_content.append(f"\n## {folder}\n")
+        # Map folder name back to original URL
+        original_url = next((url for url in URLS_TO_CRAWL 
+                           if folder in generate_filename(url, 1, "", OUTPUT_FILE_PREFIX)), folder)
+        
+        report_content.append(f"\n## {original_url}\n")
         for old_file, new_file, diff, content1, content2 in folder_changes:
-            # Extract timestamps from filenames (assumes format YYYYMMDD_HHMMSS.md)
-            old_time = old_file.replace('.md', '')
-            new_time = new_file.replace('.md', '')
-            
             report_content.append(f"\n### Changes: {old_file} → {new_file}\n")
             report_content.append("```diff")
             report_content.extend(diff)
