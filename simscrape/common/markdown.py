@@ -1,6 +1,7 @@
 """
 Markdown generation utilities
 """
+# import re
 from typing import Optional
 from bs4 import BeautifulSoup
 from pydantic import BaseModel
@@ -8,6 +9,7 @@ from pydantic import BaseModel
 class MarkdownGenerationStrategy(BaseModel):
     """Base class for markdown generation strategies"""
     title: Optional[str] = None
+    markdown: Optional[str] = None
 
     def generate_markdown(self, html: str) -> str:
         """Generate markdown from HTML"""
@@ -36,15 +38,21 @@ class DefaultMarkdownGenerator(MarkdownGenerationStrategy):
             for element in soup(['script', 'style']):
                 element.decompose()
 
-            # Get text and clean up whitespace
-            text = soup.get_text()
+            # Get text
+            text = soup.get_text() # original crawl4ai cleanup
+            # text = soup.get_text(separator='\n') # Get text preserving natural line breaks
 
-            # Clean up the text
+            # Clean up excessive whitespace while preserving line breaks
+            # lines = [line.strip() for line in text.splitlines() if line.strip()]
+            # self.markdown = '\n\n'.join(lines)
+
+            # Original crawl4ai cleanup the text
             lines = (line.strip() for line in text.splitlines())
             chunks = (phrase.strip() for line in lines for phrase in line.split("  "))
             text = '\n'.join(chunk for chunk in chunks if chunk)
 
             return text
+
         except (AttributeError, TypeError, ValueError) as e:
             print(f"Error in markdown generation: {str(e)}")
             return ""
