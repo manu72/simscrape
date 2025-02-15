@@ -13,13 +13,14 @@ import difflib
 from typing import Dict, List, Tuple
 from simscrape.common.crawler import AsyncWebCrawler
 from simscrape.common.filename import generate_filename
+from simscrape.modules.newsagent.processor import call_chatgpt
 
 # variable for configuration
 URLS_TO_CRAWL = [
-    "https://immi.homeaffairs.gov.au/what-we-do/whm-program/latest-news",
-    "https://immi.homeaffairs.gov.au/visas/getting-a-visa/visa-listing",
-   # "https://www.abc.net.au/news",
-   # "https://www.abc.net.au/news/world",
+   # "https://immi.homeaffairs.gov.au/what-we-do/whm-program/latest-news",
+   # "https://immi.homeaffairs.gov.au/visas/getting-a-visa/visa-listing",
+    "https://www.abc.net.au/news",
+    "https://www.abc.net.au/news/world",
    # "https://www.abc.net.au/news/politics",
    # "https://www.abc.net.au/news/2025-02-15/elon-musks-doge-agency-explained/104929704",
    # "https://www.abc.net.au/news/business",
@@ -32,7 +33,7 @@ URLS_TO_CRAWL = [
    # "https://www.abc.net.au/news/justin",
     # Add more URLs as needed
 ]
-OUTPUT_FILE_PREFIX = "immi"  # variable for prefix for files
+OUTPUT_FILE_PREFIX = "abc"  # variable for prefix for files
 
 async def check_folder_differences(
     diff_dir: Path
@@ -89,17 +90,64 @@ async def save_diff_reports(
     base_dir: Path,
     timestamp: str
 ):
-    """
-    Save differences reports in both markdown and HTML formats.
-    """
+    """Save differences reports and get AI analysis"""
     report_dir = base_dir / "reports"
     report_dir.mkdir(exist_ok=True)
 
-    # Markdown report
+    # Generate markdown report content
     report_content = ["# Content Change Report\n"]
     report_content.append(f"Generated: {timestamp}\n")
 
-    # HTML report header
+    for folder, folder_changes in changes.items():
+        # Map folder name back to original URL
+        original_url = next((url for url in URLS_TO_CRAWL 
+                           if folder in generate_filename(url, 1, "", OUTPUT_FILE_PREFIX)), folder)
+        
+        report_content.append(f"\n## {original_url}\n")
+        for old_file, new_file, diff, content1, content2 in folder_changes:
+            report_content.append(f"\n### Changes: {old_file} → {new_file}\n")
+            report_content.append("```diff")
+            report_content.extend(diff)
+            report_content.append("```\n")
+
+    # Save markdown report
+    report_text = "\n".join(report_content)
+    md_file = report_dir / f"diff_report_{timestamp}.md"
+    md_file.write_text(report_text)
+    print(f"✓ Markdown diff report saved to: {md_file}")
+
+    # Get AI analysis of the changes
+    try:
+        prompt = (
+            "You are an expert at analyzing website content changes. "
+            "For each URL below, analyze the differences between the two versions "
+            "and provide a clear summary of what changed.\n\n"
+            "For each change:\n"
+            "1. Start with the URL being monitored\n"
+            "2. Show the comparison timestamps (from → to)\n"
+            "3. Summarize what content was added, removed, or modified\n"
+            "4. Highlight any significant changes in meaning or context\n\n"
+            "Format your response in markdown with appropriate headers and bullet points.\n\n"
+            f"{report_text}"
+        )
+        
+        ai_summary = call_chatgpt(prompt)
+        
+        # Save AI summary with metadata header
+        summary_content = [
+            "# Website Content Change Analysis\n",
+            f"Analysis Generated: {timestamp}\n",
+            ai_summary
+        ]
+        
+        summary_file = report_dir / f"diff_analysis_{timestamp}.md"
+        summary_file.write_text("\n".join(summary_content))
+        print(f"✓ AI analysis saved to: {summary_file}")
+        
+    except Exception as e:
+        print(f"Error getting AI analysis: {str(e)}")
+
+    # Save HTML report as before...
     html_content = ["<html><head><title>Content Change Report</title></head>"]
     html_content.append("<body>")
     html_content.append("<h1>Content Change Report</h1>")
@@ -108,16 +156,9 @@ async def save_diff_reports(
     differ = difflib.HtmlDiff()
 
     for folder, folder_changes in changes.items():
-        report_content.append(f"\n## {folder}\n")
         html_content.append(f"<h2>{folder}</h2>")
 
         for old_file, new_file, diff, content1, content2 in folder_changes:
-            # Markdown diff
-            report_content.append(f"\n### Changes: {old_file} → {new_file}\n")
-            report_content.append("```diff")
-            report_content.extend(diff)
-            report_content.append("```\n")
-
             # HTML diff
             html_content.append(f"<h3>Changes: {old_file} → {new_file}</h3>")
             try:
@@ -134,11 +175,6 @@ async def save_diff_reports(
     html_content.append("</body></html>")
 
     try:
-        # Save markdown report
-        md_file = report_dir / f"diff_report_{timestamp}.md"
-        md_file.write_text("\n".join(report_content))
-        print(f"✓ Markdown diff report saved to: {md_file}")
-
         # Save HTML report
         html_file = report_dir / f"diff_report_{timestamp}.html"
         html_file.write_text("\n".join(html_content))
