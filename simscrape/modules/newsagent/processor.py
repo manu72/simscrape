@@ -25,13 +25,18 @@ if not api_key:
 # Initialize the OpenAI client
 client = openai.OpenAI(api_key=api_key)
 
-def call_chatgpt(prompt: str, model: str = "gpt-4-turbo", temperature: float = 0.7, max_tokens: int = 1024) -> str:
+def call_chatgpt(
+    prompt: str,
+    model: str = "gpt-4-turbo",
+    temperature: float = 0.7,
+    max_tokens: int = 1024
+) -> str:
     """
     Calls the OpenAI API with the given prompt and returns the response.
     """
-    if not (0 <= temperature <= 1):
+    if not 0 <= temperature <= 1:
         raise ValueError("Temperature must be between 0 and 1")
-    if not (0 <= max_tokens <= 10000):
+    if not 0 <= max_tokens <= 10000:
         raise ValueError("Max tokens must be between 0 and 10000")
     try:
         response = client.chat.completions.create(
@@ -75,8 +80,8 @@ def summarize_website(pages: dict) -> str:
         combined_summaries += f"Summary for {file_name}:\n{page_summary}\n\n"
 
     website_prompt = (
-        "You are an expert news website analyst. Based on the following summaries of website pages, "
-        "produce a well-structured markdown report. Include:\n"
+        "You are an expert news website analyst. Based on the following summaries of website pages"
+        " produce a well-structured markdown report. Include:\n"
         "1. An executive summary at the top\n"
         "2. Key themes and insights\n"
         "3. Individual story summaries organized by topic\n"
@@ -110,7 +115,9 @@ def read_markdown_files(folder: str) -> dict:
     """
     folder_path = Path(folder)
     if not folder_path.is_dir():
-        raise ValueError(f"The path {folder} is not a valid directory or contains no markdown files.")
+        raise ValueError(
+            f"The path {folder} is not a valid directory or contains no markdown files."
+        )
 
     pages = {}
     for md_file in folder_path.glob("*.md"):
@@ -118,7 +125,7 @@ def read_markdown_files(folder: str) -> dict:
             with md_file.open(encoding="utf-8") as f:
                 pages[md_file.name] = f.read()
             logger.info("Loaded %s", md_file.name)
-        except Exception as e:
+        except (FileNotFoundError, IOError) as e:
             logger.error("Error reading %s: %s", md_file.name, e)
     return pages
 
@@ -134,7 +141,7 @@ def main():
 
     try:
         pages = read_markdown_files(args.folder)
-    except Exception as e:
+    except (ValueError, FileNotFoundError, IOError) as e:
         logger.error("Failed to read markdown files: %s", e)
         sys.exit(1)
 
@@ -152,7 +159,7 @@ def main():
             summary = summarize_page(content)
             page_summaries[file_name] = summary
             print(f"\nSummary for {file_name}:\n{summary}\n{'-'*60}")
-        except Exception as e:
+        except (openai.APIError, openai.RateLimitError, ValueError) as e:
             logger.error("Error summarising %s: %s", file_name, e)
 
     logger.info("Creating overall website summary...")
@@ -171,7 +178,7 @@ def main():
         report_path.write_text(report)
         logger.info("Consolidated report saved to: %s", report_path)
 
-    except Exception as e:
+    except (openai.APIError, openai.RateLimitError, IOError) as e:
         logger.error("Error creating summary report: %s", e)
 
 if __name__ == "__main__":

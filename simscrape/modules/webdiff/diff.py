@@ -34,10 +34,13 @@ URLS_TO_CRAWL = [
 ]
 OUTPUT_FILE_PREFIX = "immi"  # variable for prefix for files
 
-async def check_folder_differences(diff_dir: Path) -> Dict[str, List[Tuple[str, str, List[str], List[str], List[str]]]]:
+async def check_folder_differences(
+    diff_dir: Path
+) -> Dict[str, List[Tuple[str, str, List[str], List[str], List[str]]]]:
     """
     Check each subfolder in diff directory for file differences.
-    Returns: Dict mapping folder names to list of (file1, file2, diff_lines, content1, content2) tuples
+    Returns: Dict mapping folder names to list of (file1, file2, 
+    diff_lines, content1, content2) tuples
     """
     changes = {}
 
@@ -81,8 +84,11 @@ async def check_folder_differences(diff_dir: Path) -> Dict[str, List[Tuple[str, 
 
     return changes
 
-async def save_diff_reports(changes: Dict[str, List[Tuple[str, str, List[str], List[str], List[str]]]],
-                          base_dir: Path, timestamp: str):
+async def save_diff_reports(
+    changes: Dict[str, List[Tuple[str, str, List[str], List[str], List[str]]]],
+    base_dir: Path,
+    timestamp: str
+):
     """
     Save differences reports in both markdown and HTML formats.
     """
@@ -174,7 +180,7 @@ async def main():
                         # Save to diff directory
                         diff_filename = generate_filename(url, index, "", OUTPUT_FILE_PREFIX)
                         # Remove index number and .md extension
-                        diff_foldername = '_'.join(diff_filename.split('_')[:-2])  # Skip the index and .md
+                        diff_foldername = '_'.join(diff_filename.split('_')[:-2])
                         diff_subdir = diff_dir / diff_foldername
                         diff_subdir.mkdir(exist_ok=True)
 

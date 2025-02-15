@@ -22,4 +22,7 @@ dependencies = [
 dev = [
     "pytest",
     "pytest-asyncio"
-] 
+]
+
+[tool.pylint.format]
+max-line-length = 120 
