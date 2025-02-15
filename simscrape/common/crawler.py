@@ -1,9 +1,8 @@
 """
-Common crawler implementation
+Common shared crawler implementations
 """
 import re
 import aiohttp
-# from bs4 import BeautifulSoup
 from pydantic import BaseModel
 from simscrape.common.markdown import DefaultMarkdownGenerator
 
@@ -70,6 +69,9 @@ class AsyncWebCrawler:
                 html = await response.text()
                 markdown = self.markdown_generator.generate_markdown(html)
                 return CrawlResult(markdown=markdown, html=html)
-        except Exception as e:
-            print(f"Error crawling {url}: {str(e)}")
+        except aiohttp.ClientError as e:
+            print(f"Network error crawling {url}: {str(e)}")
+            return CrawlResult(markdown="", html="")
+        except ValueError as e:
+            print(f"Data processing error for {url}: {str(e)}")
             return CrawlResult(markdown="", html="")

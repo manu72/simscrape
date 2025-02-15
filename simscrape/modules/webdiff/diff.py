@@ -1,5 +1,8 @@
 """
-This script crawls a single page and saves the results to a file.
+Builds in the base crawler and filename generator.
+Crawl single URLs and save trimmed content to markdown file(s) suitable for an AI Agent to read.
+Compare two md files from same URL to detect changes.
+Generate change summary and email report for admin.
 """
 
 import asyncio
@@ -11,11 +14,11 @@ from simscrape.common.filename import generate_filename
 
 # variable for configuration
 URLS_TO_CRAWL = [
-    #"https://immi.homeaffairs.gov.au/what-we-do/whm-program/latest-news",
-    #"https://immi.homeaffairs.gov.au/visas/getting-a-visa/visa-listing",
-    "https://www.abc.net.au/news", 
-    "https://www.abc.net.au/news/world",
-    "https://www.abc.net.au/news/politics",
+    "https://immi.homeaffairs.gov.au/what-we-do/whm-program/latest-news",
+    "https://immi.homeaffairs.gov.au/visas/getting-a-visa/visa-listing",
+   # "https://www.abc.net.au/news",
+   # "https://www.abc.net.au/news/world",
+   # "https://www.abc.net.au/news/politics",
    # "https://www.abc.net.au/news/business",
    # "https://www.abc.net.au/news/technology",
    # "https://www.abc.net.au/news/science",
@@ -26,7 +29,7 @@ URLS_TO_CRAWL = [
    # "https://www.abc.net.au/news/justin",
     # Add more URLs as needed
 ]
-OUTPUT_FILE_PREFIX = "abc"  # variable for prefix for files
+OUTPUT_FILE_PREFIX = "immi"  # variable for prefix for files
 
 async def main():
     """Execute the main crawling process. Returns: int: 0 for success, 1 for failure"""

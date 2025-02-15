@@ -21,7 +21,8 @@ def get_domain_prefix(url: str, default_prefix: str) -> str:
         if domain_parts[0] in ['www', 'docs', 'api']:
             domain_parts = domain_parts[1:]
         return domain_parts[0] if domain_parts else default_prefix
-    except Exception:
+    except (ValueError, AttributeError, IndexError) as e:
+        print(f"URL parsing error: {str(e)}")
         return default_prefix
 
 def get_path_suffix(url: str) -> Optional[str]:
@@ -30,7 +31,8 @@ def get_path_suffix(url: str) -> Optional[str]:
         parsed = urlparse(url)
         path_parts = [p for p in parsed.path.split('/') if p]
         return path_parts[-1] if path_parts else None
-    except Exception:
+    except (ValueError, AttributeError, IndexError) as e:
+        print(f"Path parsing error: {str(e)}")
         return None
 
 def generate_filename(url: str, index: int, timestamp: str, default_prefix: str) -> str:
@@ -38,23 +40,23 @@ def generate_filename(url: str, index: int, timestamp: str, default_prefix: str)
     try:
         # Get domain prefix (e.g., 'crawl4ai' from 'docs.crawl4ai.com')
         prefix = get_domain_prefix(url, default_prefix)
-        
+
         # Get path suffix if available
         suffix = get_path_suffix(url)
-        
+
         # Combine prefix with suffix if available
         if suffix:
             file_prefix = f"{prefix}_{sanitize_filename(suffix)}"
         else:
             file_prefix = prefix
-            
+
         # Sanitize the complete prefix
         file_prefix = sanitize_filename(file_prefix)
         if not file_prefix:  # If sanitization results in empty string
             file_prefix = default_prefix
-            
-    except Exception as e:
+
+    except (ValueError, AttributeError, TypeError) as e:
         print(f"Warning: Using default prefix due to error: {str(e)}")
         file_prefix = default_prefix
-        
-    return f"{file_prefix}_{index}_{timestamp}.md" 
+
+    return f"{file_prefix}_{index}_{timestamp}.md"
