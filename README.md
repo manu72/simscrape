@@ -1,88 +1,156 @@
 # simscrape
 
-A flexible and efficient web scraping tool for monitoring and archiving web content. Built with Python using async/await patterns for optimal performance.
+A flexible and efficient web scraping and content analysis toolkit. Built with Python using modern async/await patterns for optimal performance, it provides various modules for web crawling, content comparison, and document analysis.
 
 ## Features
 
-- Asynchronous web crawling for efficient resource usage
-- Automatic HTML to Markdown conversion
-- Organized file-based storage with timestamps
-- Robust error handling and recovery
-- Configurable URL lists and output formats
+- **Base Crawler**: Asynchronous web crawling with configurable parameters
+- **Web Difference Detection**: Compare and track changes between web pages over time
+- **PDF Vector Analysis**: Process and analyze PDF documents using vector embeddings
+- **News Agent**: Intelligent news aggregation and processing
+- **Common Utilities**: Shared tools for HTML processing, file management, and error handling
+- **Modern Architecture**: Built with async/await patterns for optimal performance
+- **Configurable**: Extensive configuration options via environment variables and config files
+- **Error Resilient**: Comprehensive error handling and recovery mechanisms
+
+## Prerequisites
+
+- Python 3.8 or higher
+- Virtual environment (recommended)
+- Git
 
 ## Installation
 
+1. Clone the repository:
+
 ```bash
-Clone the repository
 git clone https://github.com/manu72/simscrape.git
 cd simscrape
-Create and activate virtual environment (optional but recommended)
-python -m venv venv
-source venv/bin/activate # On Windows use: venv\Scripts\activate
-Install dependencies
+```
+
+2. Create and activate virtual environment:
+
+```bash
+python -m venv env
+source env/bin/activate  # On Windows use: env\Scripts\activate
+```
+
+3. Install dependencies:
+
+```bash
 pip install -r requirements.txt
 ```
+
+4. Configure environment variables:
+
+```bash
+cp .env.example .env
+# Edit .env with your configuration
+```
+
+## Project Structure
+
+simscrape/
+├── api/ # API interfaces
+├── common/ # Shared utilities
+├── modules/
+│ ├── basecrawler/ # Core crawling functionality
+│ ├── webdiff/ # Web difference detection
+│ ├── pdfvector/ # PDF processing and analysis
+│ └── newsagent/ # News processing features
+├── config.py # Configuration management
+└── main.py # Application entry point
+
+input/ # Input files and configurations
+output/ # Generated output files
+tests/ # Test suite
+
+## Dependencies
+
+Key dependencies include:
+
+- aiohttp: Async HTTP client/server
+- beautifulsoup4: HTML parsing
+- pydantic: Data validation
+- python-dotenv: Environment management
+- openai: AI integration
+- sentence-transformers: Text embeddings
+- faiss-cpu: Vector similarity search
+- langchain: Language model tools
+- PyMuPDF: PDF processing
 
 ## Usage
 
 ### Basic Crawling
 
-The base crawler fetches content from configured URLs and saves them as markdown files:
-
 ```python
-from simscrape.modules.base.base import main
+from simscrape.modules.basecrawler import crawler
 import asyncio
-asyncio.run(main())
-```
 
-```bash
-python main.py --mode crawl --urls urls.txt
+async def main():
+    urls = ["https://example.com"]
+    results = await crawler.crawl(urls)
+
+asyncio.run(main())
 ```
 
 ### Web Difference Detection
 
-The web difference detection module compares two URLs and saves the differences as a markdown file:
-
 ```python
-from simscrape.modules.webdiff.diff import main
+from simscrape.modules.webdiff import diff
 import asyncio
+
+async def main():
+    url = "https://example.com"
+    changes = await diff.compare_versions(url)
+
 asyncio.run(main())
 ```
 
-### Output
+### PDF Vector Analysis
 
-Files are saved in the `output/` directory with the following structure:
+```python
+from simscrape.modules.pdfvector import analyzer
 
-output/
-└── {prefix}/
-└── {prefix}_{section}_{index}\_{timestamp}.md
+results = analyzer.process_pdf("document.pdf")
+```
 
-## Project Structure
+## Configuration
 
-simscrape/
-├── common/ # Shared utilities
-│ ├── crawler.py # Core crawler implementation
-│ ├── filename.py # File naming utilities
-│ └── markdown.py # HTML to Markdown conversion
-└── modules/
-├── base/ # Basic crawling functionality
-└── webdiff/ # Change detection features
+The application uses environment variables for configuration. Copy `.env.example` to `.env` and adjust the values:
+
+```env
+API_KEY=your_api_key
+BASE_URL=https://api.example.com
+OUTPUT_DIR=./output
+...
+```
 
 ## Error Handling
 
-The crawler includes comprehensive error handling for:
+The application implements comprehensive error handling for:
 
-- Network timeouts
-- File operations
-- Permission issues
-- General exceptions
+- Network timeouts and connection issues
+- File system operations
+- API rate limits and quotas
+- Data processing errors
+- Resource management
 
-Each error is logged with appropriate context for debugging.
+Errors are logged with context for debugging and monitoring.
 
 ## Development
 
-Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
+1. Fork the repository
+2. Create a feature branch
+3. Implement changes with tests
+4. Submit a pull request
 
-## License
+For major changes, please open an issue first to discuss the proposed changes.
 
-[MIT](https://choosealicense.com/licenses/mit/)
+## Testing [not yet implemented]
+
+Run the test suite:
+
+```bash
+python -m pytest tests/
+```
