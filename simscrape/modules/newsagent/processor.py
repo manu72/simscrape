@@ -1,5 +1,6 @@
 """
 Summarise website content using the OpenAI ChatGPT API.
+Requires a folder parameter e.g. python3 -m simscrape.modules.newsagent.processor output/abc
 """
 from pathlib import Path
 from datetime import datetime
@@ -86,6 +87,8 @@ def summarize_website(pages: dict) -> str:
         "2. Key themes and insights\n"
         "3. Individual story summaries organized by topic\n"
         "4. Notable trends or patterns\n"
+        "Include full URL links to the original content for each story summary.\n"
+        "End report with a list of URLs that were monitored.\n"
         "Use proper markdown formatting with headers, bullet points, and sections.\n\n{text}"
     )
     prompt = website_prompt.format(text=combined_summaries)
