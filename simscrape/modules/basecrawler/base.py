@@ -44,6 +44,9 @@ async def main():
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 
         async with AsyncWebCrawler() as crawler:
+            if not URLS_TO_CRAWL:
+                print("No URLs to crawl")
+                return 1
             for index, url in enumerate(URLS_TO_CRAWL, start=1):
                 try:
                     print(f"\nProcessing {index}/{len(URLS_TO_CRAWL)}: {url}")

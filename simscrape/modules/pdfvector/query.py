@@ -9,8 +9,8 @@ import logging
 import os
 from dotenv import load_dotenv
 from sentence_transformers import SentenceTransformer
-import faiss
-import numpy as np
+# import faiss
+# import numpy as np
 
 # Load environment variables
 load_dotenv()
@@ -74,7 +74,7 @@ def main():
     """CLI interface for querying the vector database."""
     parser = argparse.ArgumentParser(description="Query the PDF vector database")
     parser.add_argument("query", help="The search query")
-    parser.add_argument("--min-score", type=float, default=0.5, 
+    parser.add_argument("--min-score", type=float, default=0.5,
                        help="Minimum similarity score (0.0 to 1.0)")
     parser.add_argument("--max-results", type=int, default=20,
                        help="Maximum number of results to consider")

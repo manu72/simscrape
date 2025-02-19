@@ -2,13 +2,18 @@
 Process PDFs and create a FAISS vector database.
 """
 import os
+import logging
 import pickle
 import fitz  # PyMuPDF for PDF text extraction
 # import openai
-import faiss
-# import numpy as np
+import faiss # Facebook AI Similarity Search
+import numpy as np
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from sentence_transformers import SentenceTransformer
+
+# Set up logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 # ------------------------
 # 1️⃣ CONFIGURATION
@@ -26,6 +31,10 @@ embedder = SentenceTransformer(EMBEDDING_MODEL)
 def extract_text_from_pdfs(pdf_folder):
     """Extract text from PDFs in the given folder."""
     text_data = []
+
+    if not os.path.exists(pdf_folder) or not any(f.endswith(".pdf") for f in os.listdir(pdf_folder)):
+        logger.error("No PDFs found in the input folder")
+        return []
 
     for filename in os.listdir(pdf_folder):
         if filename.endswith(".pdf"):
@@ -75,17 +84,26 @@ def generate_embeddings(text_chunks):
 # ------------------------
 def create_faiss_db(text_chunks, embeddings):
     """Create and save a FAISS vector database."""
-    vector_dim = embeddings.shape[1]
-    index = faiss.IndexFlatL2(vector_dim)
-    index.add(embeddings) # index.add(embeddings.astype('float32'))  # Convert to float32
 
-    # Save metadata separately
+    embeddings_float32 = np.array(embeddings, dtype=np.float32)
+
+    # Create FAISS index
+    vector_dim = embeddings_float32.shape[1]
+    index = faiss.IndexFlatL2(vector_dim)
+
+    # Ensure IDs are provided correctly
+    ids = np.arange(len(embeddings_float32))
+
+    # Add vectors with sequential IDs
+    index.add_with_ids(embeddings_float32, ids)
+
+    # Save FAISS index and metadata separately
     faiss_db = {"index": index, "text_chunks": text_chunks}
 
     with open(DB_FILE, "wb") as f:
         pickle.dump(faiss_db, f)
 
-    print(f"✅ Vector database saved as {DB_FILE}")
+    print(f"✅ Vector database saved successfully as {DB_FILE}")
 
 # ------------------------
 # 6️⃣ MAIN PIPELINE
