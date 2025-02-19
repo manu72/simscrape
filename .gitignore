@@ -134,6 +134,7 @@ cython_debug/
 
 # PROJECT files
 output/
+input/
 
 # Environment variables
 .env
